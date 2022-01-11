@@ -7,14 +7,13 @@ pub fn build(b: *Builder) void {
     const target = b.standardTargetOptions(.{});
 
     {
-
         var raylib = b.addStaticLibrary("raylib", null);
         raylib.setTarget(target);
         raylib.setBuildMode(mode);
         raylib.linkLibC();
         if (target.getOsTag() == .linux) {
             raylib.linkSystemLibrary("X11");
-            }
+        }
         // } else if (target.getOsTag() == .macos) {
         //     raylib.linkFramework("Foundation");
         //     raylib.linkFramework("Cocoa");
