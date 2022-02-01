@@ -1,6 +1,8 @@
 # Zig + Raylib
 An experimental repository that cross-compile raylib with zig.
 
+*Note: `Raylib` already has its own [build.zig](https://github.com/raysan5/raylib/blob/master/src/build.zig)*
+
 ## Usage
 ```sh
 zig build example

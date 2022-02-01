@@ -10,28 +10,31 @@ pub fn build(b: *Builder) void {
         var raylib = b.addStaticLibrary("raylib", null);
         raylib.setTarget(target);
         raylib.setBuildMode(mode);
+        const raylibFlags = &[_][]const u8{ "-std=c99", "-DPLATFORM=DESKTOP", "-DPLATFORM_DESKTOP", "-DGRAPHICS=GRAPHICS_API_OPENGL_33", "-D_DEFAULT_SOURCE", "-Iraylib/src", "-Iraylib/src/external/glfw/include", "-Iraylib/src/external/glfw/deps" };
+        raylib.addCSourceFiles(&.{ "raylib/src/raudio.c", "raylib/src/rcore.c", "raylib/src/rmodels.c", "raylib/src/rshapes.c", "raylib/src/rtext.c", "raylib/src/rtextures.c", "raylib/src/utils.c" }, raylibFlags);
         raylib.linkLibC();
         if (target.getOsTag() == .linux) {
             raylib.linkSystemLibrary("X11");
         }
-        // } else if (target.getOsTag() == .macos) {
-        //     raylib.linkFramework("Foundation");
-        //     raylib.linkFramework("Cocoa");
-        //     raylib.linkFramework("OpenGL");
-        //     raylib.linkFramework("CoreAudio");
-        //     raylib.linkFramework("CoreVideo");
-        //     raylib.linkFramework("IOKit");
-        // }
-
-        const raylibFlags = &[_][]const u8{ "-std=c99", "-DPLATFORM=DESKTOP", "-DPLATFORM_DESKTOP", "-DGRAPHICS=GRAPHICS_API_OPENGL_33", "-D_DEFAULT_SOURCE", "-Iraylib/src", "-Iraylib/src/external/glfw/include", "-Iraylib/src/external/glfw/deps" };
-        raylib.addCSourceFiles(&.{ "raylib/src/raudio.c", "raylib/src/rcore.c", "raylib/src/rmodels.c", "raylib/src/rglfw.c", "raylib/src/rshapes.c", "raylib/src/rtext.c", "raylib/src/rtextures.c", "raylib/src/utils.c" }, raylibFlags);
+        if (target.getOsTag() == .macos) {
+            raylib.linkFramework("Foundation");
+            raylib.linkFramework("Cocoa");
+            raylib.linkFramework("OpenGL");
+            raylib.linkFramework("CoreAudio");
+            raylib.linkFramework("CoreVideo");
+            raylib.linkFramework("IOKit");
+            const raylibFlagsOSX = &[_][]const u8{"-ObjC"};
+            raylib.addCSourceFile("raylib/src/rglfw.c", raylibFlags ++ raylibFlagsOSX);
+        } else {
+            raylib.addCSourceFile("raylib/src/rglfw.c", raylibFlags);
+        }
 
         var exe = b.addExecutable("main", "example/main.zig");
         exe.setTarget(target);
         exe.linkLibrary(raylib);
         exe.addIncludeDir("raylib/src");
         exe.setBuildMode(mode);
-        switch (exe.target.toTarget().os.tag) {
+        switch (exe.target.getOsTag()) {
             .windows => {
                 exe.linkSystemLibrary("winmm");
                 exe.linkSystemLibrary("gdi32");
